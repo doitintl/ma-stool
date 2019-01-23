@@ -1,0 +1,7 @@
+runtime: python37
+service: ma-stool
+
+handlers:
+  - url: /.*
+    script: auto
+    secure: always

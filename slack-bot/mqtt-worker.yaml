@@ -1,0 +1,11 @@
+runtime: python37
+service: ma-stool-mqtt-worker
+instance_class: B1
+manual_scaling:
+    instances: 1
+
+handlers:
+  - url: /_ah/start
+    script: auto
+    secure: always
+

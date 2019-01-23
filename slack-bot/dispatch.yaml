@@ -1,0 +1,4 @@
+dispatch:
+  # Default service serves the typical web resources and all static resources.
+  - url: "*/on_message"
+    service:  ma-stool
