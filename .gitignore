@@ -172,3 +172,7 @@ dmypy.json
 .venv/
 
 # End of https://www.gitignore.io/api/python
+add
+.sconsign.dblite
+.structure.hash
+structure.hash

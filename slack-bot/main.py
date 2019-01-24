@@ -49,9 +49,9 @@ def on_message():
 
 def send_status_toslack(channel):
     slack_client = SlackClient(config['SLACK_BOT_TOKEN'])
-    if door_status == '0':
+    if door_status == '1':
         text = ' Bathroom is free :woman-running: '
-    elif door_status == '1':
+    elif door_status == '0':
         text = ' Bathroom is occupied :hourglass_flowing_sand: '
     else:
         text = 'Bathroom status unknown :question: '

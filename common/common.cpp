@@ -16,7 +16,7 @@ WiFiEspUDP Udp;
 unsigned int localPort = 2390; // local port to listen for UDP packets
 void setupWifi()
 {
-		// initialize serial for debugging
+	// initialize serial for debugging
 	Serial.begin(9600);
 	// initialize serial for ESP module
 	Serial1.begin(115200);
@@ -44,9 +44,12 @@ void setupWifi()
 	{
 		Serial.print("Attempting to connect to WPA SSID: ");
 		// Connect to WPA/WPA2 network
-		if (numSsid >1){
+		if (numSsid > 1)
+		{
 			status = WiFi.begin(ssid, pass, WiFi.MAC(0));
-		} else {
+		}
+		else
+		{
 			status = WiFi.begin(ssid, pass);
 		}
 		delay(2000);
@@ -55,14 +58,6 @@ void setupWifi()
 	// you're connected now, so print out the data
 	Serial.println("You're connected to the network");
 	delay(2000);
-	Udp.stop();
-	Udp.begin(localPort);
-	Serial.println("Waiting on time sync...");
-	while (GetTime(&Udp) < 1510644967)
-	{
-		delay(10);
-	}
-	Udp.stop();
 }
 
 void setupPubSub(MQTT_CALLBACK_SIGNATURE)
@@ -71,7 +66,7 @@ void setupPubSub(MQTT_CALLBACK_SIGNATURE)
 	client.setCallback(callback);
 }
 
-void reconnect()
+void reconnect(bool subscribe)
 {
 	// Loop until we're reconnected
 	while (!client.connected())
@@ -97,28 +92,28 @@ void reconnect()
 			}
 		}
 		//client.publish("mastool/t1", "Hello from ESP8266");
-		client.subscribe("ma-stool/bathroom");
+		client.subscribe(mastoolTopic);
 		Serial.println("Done Setup!");
 	}
 }
 
-void loopPubSub()
+void loopPubSub(bool subscribe)
 {
-	if (millis() - lastclientloop > 1000)
+	if (millis() -  lastclientloop > 1000)
 	{
 		bool clientconnected = client.loop();
 		if (!clientconnected)
 		{
-			reconnect();
+			reconnect(subscribe);
 		}
 		lastclientloop = millis();
-
 	};
 }
 
-void publishStatus(int stat){
-	char buffer [2];
-	itoa(stat,buffer, 10);
+void publishStatus(int stat)
+{
+	char buffer[2];
+	itoa(stat, buffer, 10);
 	client.publish(mastoolTopic, buffer);
 }
 

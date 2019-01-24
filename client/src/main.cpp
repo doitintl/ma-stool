@@ -9,7 +9,7 @@ void indicator(char occupied)
 {
 	Serial.print("occupied = ");
 	Serial.println(occupied);
-	if (occupied == '1')
+	if (occupied == '0')
 	{
 		digitalWrite(redPin, HIGH);
 		digitalWrite(greenPin, LOW);
@@ -44,5 +44,5 @@ void setup()
 
 void loop()
 {
-	loopPubSub();
+	loopPubSub(true);
 }

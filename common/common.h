@@ -3,7 +3,7 @@
 #include <PubSubClient.h>
 void setupWifi();
 void setupPubSub(MQTT_CALLBACK_SIGNATURE );
-void reconnect();
-void loopPubSub();
+void reconnect(bool subscribe);
+void loopPubSub(bool subscribe);
 void publishStatus(int stat);
 #endif
