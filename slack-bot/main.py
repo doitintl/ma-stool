@@ -7,7 +7,11 @@ from flask import Flask, request
 from google.cloud import tasks_v2beta3
 from slackclient import SlackClient
 
+
 app = Flask(__name__)
+
+app.logger.setLevel(logging.INFO)
+
 with open('config.json', 'r') as f:
     data = f.read()
 config = json.loads(data)
@@ -17,8 +21,7 @@ lock = threading.Lock()
 
 
 def on_mqtt_message(mqttc, obj, msg):
-    logging.warning(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
-
+    logging.info("Get a new message Topic: " + msg.topic + " QOS: " + str(msg.qos) + " Payload: " + str(msg.payload))
     client = tasks_v2beta3.CloudTasksClient()
     parent = client.queue_path("aviv-playground", 'europe-west2', 'ma-stool')
     task = {
@@ -30,7 +33,7 @@ def on_mqtt_message(mqttc, obj, msg):
     converted_payload = str(msg.payload).encode()
     task['app_engine_http_request']['body'] = converted_payload
     response = client.create_task(parent, task)
-    logging.warning('Created task {}'.format(response.name))
+    logging.info('Created task {}'.format(response.name))
     return response
 
 
@@ -43,11 +46,11 @@ def on_message():
     door_status = door_status[:-1]
     door_status = door_status[2:].lower()
     lock.release()
-    send_status_toslack(config['SLACK_CHANNEL'])
+    send_status_to_slack(config['SLACK_CHANNEL'])
     return 'ok', 200
 
 
-def send_status_toslack(channel):
+def send_status_to_slack(channel):
     slack_client = SlackClient(config['SLACK_BOT_TOKEN'])
     if door_status == '1':
         text = ' Bathroom is free :woman-running: '
@@ -73,7 +76,7 @@ def verify_slack_token(request_token):
 
 @app.route('/_ah/warmup')
 def warmup():
-    logging.debug("WarmUp")
+    logging.info("WarmUp")
     return '', 200, {}
 
 
@@ -83,27 +86,29 @@ def ma_stool():
         channel = request.form['user_id']
     else:
         channel = request.form['channel_id']
-    send_status_toslack(channel)
+    send_status_to_slack(channel)
     return '', 200, {}
 
 @app.route('/_ah/start')
 def mqtt_worker():
-    logging.warning(" Start 1")
-    with open('config.json', 'r') as f:
-        data = f.read()
-    mqtt_config = json.loads(data)
-    mqttc = mqtt.Client()
-    mqttc.on_message = on_mqtt_message
-    # Uncomment to enable debug messages
-    #mqttc.on_log = on_log
-    mqttc.username_pw_set(mqtt_config['MQTT_USER'],
-                          mqtt_config['MQTT_PASSWORD'])
-    mqttc.connect(mqtt_config['MQTT_SERVER'], mqtt_config['MQTT_PORT'], 60)
-    mqttc.subscribe(mqtt_config['MQTT_TOPIC'], 0)
-    mqttc.loop_forever()
-    logging.warning("Out of the loop")
+    logging.info("Staring mqtt_worker")
+    while True:
+        logging.info(" Starting MQTT Loop")
+        with open('config.json', 'r') as f:
+            data = f.read()
+        mqtt_config = json.loads(data)
+        mqttc = mqtt.Client()
+        mqttc.on_message = on_mqtt_message
+        # Uncomment to enable debug messages
+        #mqttc.on_log = on_log
+        mqttc.username_pw_set(mqtt_config['MQTT_USER'],
+                              mqtt_config['MQTT_PASSWORD'])
+        mqttc.connect(mqtt_config['MQTT_SERVER'], mqtt_config['MQTT_PORT'], 60)
+        mqttc.subscribe(mqtt_config['MQTT_TOPIC'], 0)
+        mqttc.loop_forever()
+        logging.warning("Out of mqttc.loop_forever()")
 
 
 if __name__ == "__main__":
-    logging.warning('Main')
+    logging.info('Staring service')
     app.run(debug=True)

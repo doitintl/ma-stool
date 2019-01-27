@@ -176,3 +176,4 @@ add
 .sconsign.dblite
 .structure.hash
 structure.hash
+../server/.pioenvs/structure.hash
