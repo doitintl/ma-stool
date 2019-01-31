@@ -1,7 +1,7 @@
 import json
 import logging
 import threading
-
+from datastore import  State
 import paho.mqtt.client as mqtt
 from flask import Flask, request
 from google.cloud import tasks_v2beta3
@@ -16,7 +16,6 @@ with open('config.json', 'r') as f:
     data = f.read()
 config = json.loads(data)
 
-door_status = ""
 lock = threading.Lock()
 
 
@@ -30,8 +29,9 @@ def on_mqtt_message(mqttc, obj, msg):
             'relative_uri': '/on_message'
         }
     }
-    converted_payload = str(msg.payload).encode()
-    task['app_engine_http_request']['body'] = converted_payload
+    st = State()
+    st.put(msg.payload.decode("utf-8"))
+    task['app_engine_http_request']['body'] = ""
     response = client.create_task(parent, task)
     logging.info('Created task {}'.format(response.name))
     return response
@@ -39,19 +39,14 @@ def on_mqtt_message(mqttc, obj, msg):
 
 @app.route('/on_message', methods=['POST'])
 def on_message():
-    payload = request.get_data(as_text=False) or '(empty payload)'
-    lock.acquire()
-    global door_status
-    door_status = str(payload, 'utf-8')
-    door_status = door_status[:-1]
-    door_status = door_status[2:].lower()
-    lock.release()
     send_status_to_slack(config['SLACK_CHANNEL'])
     return 'ok', 200
 
 
 def send_status_to_slack(channel):
     slack_client = SlackClient(config['SLACK_BOT_TOKEN'])
+    st = State()
+    door_status = st.get()
     if door_status == '1':
         text = ' Bathroom is free :woman-running: '
     elif door_status == '0':
