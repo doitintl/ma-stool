@@ -1,5 +1,5 @@
 # Ma-Stool
-Bathroom occupancy detector [Blog Post](https://medium.com/@avivl/harvesting-the-power-of-the-cloud-and-arduino-for-bathroom-occupancy-awareness-47bc2a873799)
+Bathroom occupancy detector [Blog Post](https://blog.doit-intl.com/harvesting-the-power-of-the-cloud-and-arduino-for-bathroom-occupancy-awareness-47bc2a873799)
 
 
 ## Arduino
