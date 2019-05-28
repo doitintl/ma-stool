@@ -1,5 +1,5 @@
 slackclient
-Flask==0.12.2
+Flask==0.12.3
 paho-mqtt==1.4.0
 google-cloud-tasks==0.3.0
 google-cloud-datastore
